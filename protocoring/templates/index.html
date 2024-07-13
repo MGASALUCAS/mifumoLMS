@@ -1,0 +1,83 @@
+<body>
+
+    <!-- ... -->
+    
+    <button id="startProctoringButton">Start exam with proctoring</button>
+    
+    <!-- ... -->
+    
+    <script type="module">
+    
+    import * as proctoring from 'https://sdk.app.proctor.alemira.com/proctoring.js.'
+    
+    async function getDataForProctoring() {
+    
+    const LMS_URL = 'https://lms-origin/get-data-for-proctoring'
+    
+    try {
+    
+    return await fetch(LMS_URL).then(res => res.json())
+    
+    } catch (e) {
+    
+    alert('Error in fetch data to start proctoring')
+    
+    console.error(e)
+    
+    return {}
+    }
+    }
+    
+    /*   */
+      async function startProctoring(serverOrigin, integrationName, jwt, theme, config) {
+        let proctoringSession = await
+          proctoring.init({serverOrigin, integrationName, jwt, theme, ...config})
+            .catch(e => alert(`Proctoring SDK Init Error: ${e.message} ${e.cause}`))
+    
+        proctoringSession.examStarted
+          .then(() => console.log('proctoring: exam started'))
+          .then(() => {
+            hideInitialDom()
+            showExamContent()
+          })
+    
+        proctoringSession.examFinished
+          .then(() => {
+            hideExamContent()
+          })
+    
+        proctoringSession.videoUploaded.then(() => {
+          console.log('proctoring: video uploaded')
+        })
+      }
+      /*  */
+    
+      async function startButtonHandler(config) {
+        let data = await getDataForProctoring()
+    
+        if (!data) {
+          return null
+        }
+    
+        let {serverOrigin, integrationName, jwt} = data
+    
+        await startProctoring(serverOrigin, integrationName, jwt, 'default', config)
+      }
+    
+    document.getElementById('startProctoringButton').addEventListener('click', handleStartProctoringButton);
+    
+    async function handleStartProctoringButton() {
+    
+       let {serverOrigin, integrationName, jwt} = await getDataForProctoring()
+    
+       let theme = 'default'
+       let config = {}
+    
+       await startProctoring(serverOrigin, integrationName, jwt, theme, config)
+    }
+      
+      </script>
+    
+    <!-- ... -->
+    
+    </body>
