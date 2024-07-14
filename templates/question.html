@@ -115,7 +115,7 @@
         </div>
         {% endif %}
         <div class="card-subtitle p-4">
-            <form action="" method="POST">{% csrf_token %}
+            <form action="" method="POST" id="quiz-form">{% csrf_token %}
                 <input type="hidden" name="question_id" value="{{ question.id }}">
                 <ul class="list-group">
                     {% for answer in form.answers %}
@@ -138,14 +138,15 @@
 <script>
     const instractionModal = new bootstrap.Modal('#instractionModal', {
         keyboard: false
-    })
+    });
     instractionModal.show();
 
-    // Detect when the user tries to leave the page
+    // Detect when the user tries to leave the page or switch tabs
     document.addEventListener('visibilitychange', function() {
         if (document.hidden) {
-            alert('You cannot switch tabs during the quiz!');
-            // Optionally, take other actions like logging out the user or recording the incident
+            alert('You cannot switch tabs during the quiz. The quiz will now be submitted.');
+            document.getElementById('quiz-form').submit();
+            window.close(); // Optionally, close the tab
         }
     });
 
@@ -171,5 +172,14 @@
 
     // Automatically request fullscreen on page load
     window.onload = enterFullscreen;
+
+    // Ensure the quiz is only attempted once
+    document.getElementById('quiz-form').onsubmit = function() {
+        if (sessionStorage.getItem('quizAttempted')) {
+            alert('You have already attempted the quiz.');
+            return false;
+        }
+        sessionStorage.setItem('quizAttempted', 'true');
+    }
 </script>
 {% endblock js %}
